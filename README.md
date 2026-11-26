@@ -127,43 +127,23 @@ Instead of writing the entire application in a single Python file, I divided it 
 
 ## Local Installation
 
-Follow these steps to run the application on your computer.
+Follow these commands to run the application locally using Windows PowerShell.
 
-### Step 1: Clone the repository
+```powershell
+git clone https://github.com/naveenthegreat/smart-roster-management.git
+cd smart-roster-management
 
-    git clone https://github.com/naveenthegreat/smart-roster-management.git
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 
-    cd smart-roster-management
+pip install -r requirements.txt
 
-### Step 2: Create a virtual environment
+python -m streamlit run app.py
+```
 
-    python -m venv venv
+The application automatically creates the database and loads the sample data.
 
-### Step 3: Activate the virtual environment
-
-For Windows PowerShell:
-
-    .\venv\Scripts\Activate.ps1
-
-For Linux or macOS:
-
-    source venv/bin/activate
-
-### Step 4: Install the required libraries
-
-    pip install -r requirements.txt
-
-### Step 5: Run the application
-
-    python -m streamlit run app.py
-
-The application automatically creates the SQLite database and adds the sample data.
-
-Open the following URL in your browser:
-
-http://localhost:8501
-
-No external API keys or environment variables are required to run this project.
+Open `http://localhost:8501` in your browser.
 
 ## How to Use the Application
 
