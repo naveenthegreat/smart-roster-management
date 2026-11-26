@@ -195,13 +195,13 @@ There are separate tables for leaves, holidays, staffing requirements and roster
 
 ### 2. How does the roster generation logic work?
 
-Before generating a roster, we need to know which employees are available and how many employees are required for each process.
+Before generating a roster, we need to check employee availability and staffing requirements for each process.
 
-First, the scheduler collects the required data from the database and generates the dates for the selected month. Then it assigns a daily status to each employee based on their leaves, holidays and weekly-off preferences.
+First, the scheduler collects the required data from the database and assigns daily work statuses based on employee leaves, holidays and weekly-off preferences.
 
-To reduce staffing shortages, I used a greedy approach where the scheduler tries to move weekly offs to another suitable day. It also checks whether this change creates another staffing shortage.
+If there is a staffing shortage, the scheduler tries to adjust weekly offs within the same week without creating another shortage. For this, I used a greedy approach.
 
-After this, the generated roster is stored in the database and checked by the validator. If there are any remaining conflicts, they are displayed to the manager.
+Once the roster is generated, it is saved in the database and the validator checks for any remaining conflicts, which the manager can review.
 
 ### 3. How does the system handle single-resource and multi-resource brands?
 
@@ -258,7 +258,7 @@ However, I would need to improve some areas like database queries and the schedu
 
 Currently, I am using SQLite, but for a larger application with multiple users, I would prefer PostgreSQL. I would also explore constraint-based scheduling to handle more complex scheduling requirements.
 
-### 8. What improvements would be implemented with one additional week?
+### 8. If I had one additional week to work on this, what would I improve first?
 
 If I had one more week to work on this project, the first thing I would improve is the scheduling algorithm because the current algorithm can generate a roster but cannot resolve all the conflicts.
 
@@ -296,32 +296,6 @@ To run the tests:
 
 Apart from automated testing, I also included manual testing scenarios like generating a roster, changing employee availability and checking the impact of those changes.
 
-## Assumptions and Limitations
-
-There are some assumptions I made while developing this project and some limitations in the current version.
-
-- All employee and brand data is fictional.
-- Shifts start and end on the same day.
-- Weekly offs may be changed to reduce staffing shortages.
-- The scheduling algorithm does not guarantee the best possible roster.
-- Employees with overlapping assignments are excluded from confirmed coverage for the affected processes.
-- Weekly rest validation only checks complete weeks within the selected month.
-- Generating a roster again for the same month may replace manual changes.
-- Some staffing calculations do not consider overlapping assignments.
-- SQLite database changes may be lost after restarting or redeploying the application.
-- User authentication and permanent roster change history are not included.
-
-## Development Approach
-
-I divided this project into different phases instead of developing everything at once.
-
-First, I worked on the database and sample data. After that, I developed employee management, brand management and roster generation.
-
-Once these things were working, I moved towards conflict detection, roster editing and impact analysis. In the final phases, I worked on testing, improving the user interface, uploading the project to GitHub and deploying it on Streamlit.
-
-My main purpose was not only to generate a roster but also to identify the problems in it and help the manager understand those problems.
-
-During the development of this project, I used AI assistance for guidance, understanding concepts, code generation and solving errors.
 
 ## Author
 
