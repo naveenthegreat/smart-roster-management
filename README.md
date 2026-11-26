@@ -16,21 +16,14 @@ I developed this application to manage all these things in one place. It helps m
 
 ## Key Features
 
-- Manage employees, brands, processes and operational pods.
-- Set working days and operating rules for different brands.
-- Manage single-resource and multi-resource brands.
-- Manage employee weekly-off preferences.
-- Manage approved leaves, public holidays and compensatory offs.
-- Set minimum staffing requirements for different days.
-- Automatically generate monthly employee rosters.
-- View rosters by company, pod, brand, process and employee.
-- Check daily brand and process coverage.
-- Detect staffing shortages and overlapping shifts.
-- Detect weekly rest violations.
-- Manually edit employee schedules.
-- Compare conflicts before and after a roster change.
+- Manage employees, brands, processes and pods.
+- Configure brand working rules and staffing requirements.
+- Manage employee leaves, holidays and weekly-off preferences.
+- Automatically generate monthly rosters with different viewing options.
+- Check coverage for single-resource and multi-resource brands.
+- Detect staffing shortages, overlapping shifts and other scheduling conflicts.
+- Manually edit rosters and check the impact before saving changes.
 - Download rosters and conflict reports in CSV format.
-- Test important application functions using Pytest.
 
 ## Technology Stack
 
@@ -78,35 +71,6 @@ The application is divided into eight main sections:
 7. **Edit Roster:** Allows managers to make changes and check their impact before saving.
 8. **Conflict Reports:** Displays scheduling conflicts, their severity and possible solutions.
 
-## Project Structure
-
-    smart-roster-management/
-    ├── .streamlit/
-    │   └── config.toml
-    ├── views/
-    │   ├── dashboard.py
-    │   ├── employees.py
-    │   ├── brands.py
-    │   ├── pods.py
-    │   ├── availability.py
-    │   ├── roster_view.py
-    │   ├── edit_roster.py
-    │   └── conflicts.py
-    ├── tests/
-    │   ├── test_scheduler.py
-    │   ├── test_validator.py
-    │   └── test_editor.py
-    ├── app.py
-    ├── database.py
-    ├── seed_data.py
-    ├── scheduler.py
-    ├── validator.py
-    ├── coverage_engine.py
-    ├── roster_editor.py
-    ├── ui_helpers.py
-    ├── requirements.txt
-    ├── .gitignore
-    └── README.md
 
 ## System Architecture
 
