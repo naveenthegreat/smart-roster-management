@@ -234,26 +234,6 @@ Some other improvements would be:
 
 My main priority would be reducing conflicts and making the application more suitable for actual business use.
 
-## Testing
-
-I used Pytest to test the important functions of the application because a small error in scheduling can affect multiple employees and brands.
-
-The automated tests cover:
-
-- Monthly date generation and leap years.
-- Brand operating rules.
-- Minimum staffing requirements.
-- Staffing shortages.
-- Overlapping shifts.
-- Weekly rest validation.
-- Conflict comparison.
-
-To run the tests:
-
-    python -m pytest tests/ -v
-
-Apart from automated testing, I also included manual testing scenarios like generating a roster, changing employee availability and checking the impact of those changes.
-
 
 ## Author
 
