@@ -153,9 +153,7 @@ In this project, one employee can work for multiple brands and one brand can hav
 
 Every employee belongs to a pod and each pod has a team leader. The `brand_processes` table connects brands with their processes and stores their operating rules and staffing requirements.
 
-I used the `assignments` table to connect employees with brand processes through a many-to-many relationship. This means multiple employees can work on the same process and one employee can also handle multiple processes.
-
-There are separate tables for leaves, holidays, staffing requirements and roster records.
+I used the `assignments` table to connect employees with brand processes through a many-to-many relationship. This means multiple employees can work on the same process and one employee can also handle multiple processes. There are separate tables for leaves, holidays, staffing requirements and roster records.
 
 ### 2. How does the roster generation logic work?
 
@@ -194,9 +192,7 @@ The system detects the following conflicts:
 - Weekly Off Preference Changed
 - Weekly Rest Violation
 
-I divided these conflicts into two categories, Critical and Warning. Critical conflicts need to be resolved before approving the roster, while warnings need to be reviewed.
-
-The Conflict Reports page shows the reason for the conflict, affected employee, brand, process and suggested action.
+I divided these conflicts into two categories, Critical and Warning. Critical conflicts need to be resolved before approving the roster, while warnings need to be reviewed. The Conflict Reports page shows the reason for the conflict, affected employee, brand, process and suggested action.
 
 ### 6. Which decisions are automated and which remain under human control?
 
@@ -204,9 +200,7 @@ According to me, automating everything is not a good idea in this type of applic
 
 For example, if an employee is unavailable and there is no backup employee, the system can identify the problem but the manager should decide how to handle it.
 
-So in this project, I automated things like roster generation, weekly-off adjustments, coverage calculation and conflict detection.
-
-Things like assigning employees to brands, setting staffing requirements and making manual changes are under the manager's control.
+So in this project, I automated things like roster generation, weekly-off adjustments, coverage calculation and conflict detection. Things like assigning employees to brands, setting staffing requirements and making manual changes are under the manager's control.
 
 I also added an Impact Analysis feature where the manager can see what will happen if a particular change is made to the roster. It compares the conflicts before and after the change.
 
