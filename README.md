@@ -175,75 +175,59 @@ The application uses the following codes to represent employee availability.
 
 ## Scheduling Approach
 
-I used a rule-based approach to generate employee rosters.
+The main problem in generating a roster is managing employee availability while also meeting the staffing requirements of different brands. Every employee has different weekly offs, leaves and work responsibilities.
 
-The scheduler first collects all the required information from the database, including employee details, approved leaves, holidays, weekly-off preferences, brand operating rules and resource assignments.
+To handle this, I used a rule-based scheduling approach. The scheduler first collects all the required data from the database and gives priority to approved leaves and mandatory holidays. After that, it assigns weekly offs based on employee preferences. If a weekly off causes a staffing shortage, the scheduler tries to move it to another day within the same week without creating another shortage.
 
-It first applies mandatory restrictions, such as approved leaves and mandatory holidays. After that, it assigns weekly offs based on employee preferences.
-
-If a weekly off causes a staffing shortage, the scheduler tries to move it to another day within the same week, provided that the change does not create an additional staffing shortage on that day.
-
-Once the roster is generated, the validator checks for staffing shortages, overlapping shifts, availability violations, weekly rest violations and other scheduling problems.
-
-The application does not hide conflicts when it cannot satisfy all the requirements. Instead, it reports them so that the manager can review and resolve them.
+Once the roster is generated, the validator checks for different scheduling conflicts. If the system cannot meet all the requirements, it reports those conflicts so the manager can review and resolve them.
 
 ## Assessment Questions
 
 ### 1. How are employees, brands, processes and pods related?
 
-I used a relational SQLite database to manage the relationships between these entities.
+In this project, one employee can work for multiple brands, and one brand can have multiple processes. To manage these relationships, I used a relational SQLite database.
 
-Every employee belongs to an operational pod, and each pod has a team leader.
+Every employee belongs to a pod, and every pod has a team leader. I created a `brand_processes` table to connect brands with their processes and store their operating rules and staffing requirements.
 
-A brand can have multiple processes. For example, a brand may require customer support, order confirmation or other operational processes.
-
-The `brand_processes` table connects brands with processes and stores their operating rules and staffing requirements.
-
-The `assignments` table connects employees with brand processes using a many-to-many relationship. This means one employee can work for multiple brands or processes, and one brand process can have multiple employees.
-
-There are also separate tables for leaves, holidays, weekday staffing requirements and generated roster records.
+The `assignments` table connects employees with brand processes using a many-to-many relationship. This allows multiple employees to work on the same process and one employee to handle multiple processes. I also created separate tables for leaves, holidays, staffing requirements and roster records.
 
 ### 2. How does the roster generation logic work?
 
-The scheduler first collects the required data from the database and generates all the dates for the selected month.
+Before generating a roster, we need to know which employees are available and how many employees are required for each process.
 
-It then assigns a status to each employee for every day based on approved leaves, holidays, availability and weekly-off preferences.
+The scheduler first collects this information from the database and generates all the dates for the selected month. It then assigns daily statuses to employees based on their leaves, holidays and weekly-off preferences.
 
-After that, it checks whether moving a weekly off to another day can improve staffing coverage. I used a greedy approach for this, which means the scheduler tries to make a useful adjustment based on the current situation.
+If there is a staffing shortage, the scheduler tries to adjust the weekly offs using a greedy approach. While making these adjustments, it also checks whether moving a weekly off creates another staffing shortage.
 
-Once the roster is generated, it is saved in the database and checked by the validator.
-
-Approved leaves and mandatory restrictions are given higher priority than employee preferences.
-
-If the scheduler cannot meet all staffing requirements, the remaining conflicts are reported for the manager to review.
+After completing this process, the roster is saved in the database and checked by the validator. If there are still conflicts, the system reports them instead of ignoring them.
 
 ### 3. How does the system handle single-resource and multi-resource brands?
 
-The system checks employee coverage separately for each brand process.
+The main difference between single-resource and multi-resource brands is the number of employees assigned to them.
 
-For a single-resource brand, if the only assigned employee becomes unavailable, the brand process may have no coverage.
+In a single-resource brand, there is only one dedicated employee, so if that employee is unavailable, it can directly affect the brand's operations.
 
-For a multi-resource brand, the system checks how many assigned employees are available and whether that number meets the minimum staffing requirement.
+In a multi-resource brand, there are multiple employees assigned to handle the work. If one employee is unavailable, the system checks whether the remaining employees can meet the minimum staffing requirement.
 
-If employees have overlapping assignments, they are not counted as confirmed coverage for the affected processes until the overlap is resolved.
+I implemented coverage checking at the brand-process level because different processes may have different staffing requirements. The system also checks for overlapping assignments and excludes those employees from confirmed coverage for the affected processes.
 
 ### 4. What happens when the only assigned employee becomes unavailable?
 
-The system checks which brands and processes are handled by that employee.
+If a brand depends on only one employee and that employee becomes unavailable, there is a possibility that the brand's operations will be affected.
 
-It then checks whether any other assigned employee is available to handle those responsibilities.
+To handle this situation, the system first identifies the processes assigned to that employee. It then checks whether any other assigned employee is available to handle those processes.
 
-If no employee is available, the application generates a Zero Coverage conflict.
+If no employee is available, the system generates a Zero Coverage conflict and marks it as critical. The manager can review the conflict and decide whether to assign a backup employee or change the resource assignments.
 
-The manager can review the conflict and decide whether to assign a backup employee, change resource assignments or adjust the schedule.
-
-The system does not allow approved leaves or mandatory availability restrictions to be overridden through normal roster editing.
+The system does not automatically cancel approved leaves or override mandatory availability restrictions to solve the problem.
 
 ### 5. How are scheduling conflicts and insufficient staffing handled?
 
-I developed a separate validation module to identify scheduling problems.
+Generating a roster does not always mean that all staffing requirements have been fulfilled. There can still be situations where employees are unavailable, shifts overlap or a process does not have enough employees.
 
-The system detects the following types of conflicts:
+To identify these problems, I created a separate validation module.
+
+The system detects the following conflicts:
 
 - Zero Coverage
 - Insufficient Staffing
@@ -254,81 +238,61 @@ The system detects the following types of conflicts:
 - Weekly Off Preference Changed
 - Weekly Rest Violation
 
-These conflicts are divided into two categories:
+I divided these conflicts into two categories: Critical and Warning. Critical conflicts require attention before approving the roster, while warnings indicate situations that need review.
 
-**Critical:** Problems that require attention before the roster can be approved.
-
-**Warning:** Problems that should be reviewed but may not directly stop operations.
-
-The Conflict Reports page shows the affected date, employee, brand, process, conflict description and a suggested action.
-
-This helps managers understand what caused the problem and how they can resolve it.
+The Conflict Reports page displays the affected employee, date, brand, process and reason for the conflict. It also provides a suggested action to help the manager resolve the problem.
 
 ### 6. Which decisions are automated and which remain under human control?
 
-I wanted the application to reduce manual work without taking complete control away from the manager.
+I believe that automating every decision in workforce management is not always a good approach because some decisions require human judgment.
 
-The system automatically handles:
+In this project, I automated tasks such as roster generation, weekly-off adjustments, coverage calculation and conflict detection. These are repetitive tasks that can be handled using predefined rules.
 
-- Monthly roster generation.
-- Weekly-off adjustments.
-- Employee coverage calculations.
-- Scheduling conflict detection.
+However, decisions such as assigning employees to brands, setting staffing requirements and making manual roster changes remain under the manager's control.
 
-The manager remains responsible for:
+I also added an Impact Analysis feature to help managers understand the effect of a change before saving it. For example, if a manager makes an employee unavailable, the system compares the conflicts before and after that change.
 
-- Employee and resource assignments.
-- Brand operating rules.
-- Minimum staffing requirements.
-- Employee availability information.
-- Manual roster changes.
-
-I also included an impact analysis feature that allows managers to check how a proposed change will affect the roster before saving it.
-
-For example, if a manager changes an employee's status from Working to Unavailable, the system shows whether that change creates any additional conflicts.
-
-This allows the manager to make a decision based on the actual impact of the change.
+This helps reduce manual work while still allowing the manager to make the final decision.
 
 ### 7. How would the system scale if the number of employees and brands doubled?
 
-Since the application is divided into separate modules and uses a relational database, more employees, brands, processes and pods can be added without changing the main application logic.
+If the number of employees and brands increases, the system will have to process more records and perform more coverage and conflict calculations.
 
-However, as the amount of data increases, some improvements would be required to maintain good performance.
+Since I divided the application into separate modules, new employees, brands, processes and pods can be added without changing the main application logic.
 
-I would focus on:
+However, for a larger system, I would reduce repeated database queries, add database indexes and improve the scheduling algorithm.
 
-- Reducing repeated database queries.
-- Loading staffing requirements once during validation.
-- Adding database indexes.
-- Improving the scheduling algorithm.
-- Replacing SQLite with PostgreSQL for better storage and support for multiple users.
+Currently, I am using SQLite, which is suitable for this project. For a larger application with multiple users, I would consider PostgreSQL because it provides better support for concurrent database operations and permanent cloud storage.
 
-For more complex scheduling requirements, I would also consider using a constraint-based optimization algorithm.
+I would also explore constraint-based scheduling to handle more complex staffing requirements.
 
 ### 8. What improvements would be implemented with one additional week?
 
-If I had one more week to work on this project, I would focus on improving the scheduling logic and making the application more suitable for real-world use.
+The current application can generate rosters, detect conflicts and show the impact of manual changes. However, there are still some areas where the application can be improved.
 
-Some improvements I would like to implement are:
+If I had one more week, my first priority would be improving the scheduling algorithm to reduce the number of conflicts. I would also add a feature that recommends suitable backup employees when a staffing shortage occurs.
 
-- A better roster optimization algorithm to reduce staffing conflicts.
-- Automatic backup employee recommendations.
+Apart from this, I would work on the following improvements:
+
 - Fairer distribution of weekly offs.
-- More detailed employee rest and availability checks.
+- Better employee rest and availability checks.
 - User login and role-based access.
-- A history of roster changes.
-- Permanent cloud database storage using PostgreSQL.
-- Better support for multiple managers using the application at the same time.
-- More integration and performance tests.
+- Maintaining a history of roster changes.
+- Permanent database storage using PostgreSQL.
+- Better support for multiple users.
+- Additional testing for different scheduling situations.
+
+These improvements would make the application more useful for real-world workforce management.
 
 ## Testing
+
+Testing is important in this project because even a small error in the scheduling logic can affect multiple employees, brands and processes.
 
 I used Pytest to test the important functions of the application.
 
 The automated tests cover:
 
-- Calendar and monthly date generation.
-- Leap year handling.
+- Monthly date generation and leap years.
 - Brand operating rules.
 - Minimum staffing requirements.
 - Staffing shortages.
@@ -336,47 +300,40 @@ The automated tests cover:
 - Weekly rest validation.
 - Conflict comparison.
 
-To run the tests, use the following command:
+To run the tests:
 
     python -m pytest tests/ -v
 
-I also included manual testing scenarios to check how the application behaves in different situations.
+Apart from automated testing, I also included manual testing scenarios such as generating a monthly roster, making an employee unavailable and checking the impact of manual changes.
 
-These scenarios include:
-
-- Generating a monthly roster.
-- Making a single-resource employee unavailable.
-- Checking the impact of changes on multi-resource brands.
-- Detecting overlapping assignments.
-- Preventing approved leave violations.
-- Comparing conflicts before and after a manual roster change.
+The purpose of these tests is to check whether the application behaves as expected in different scheduling situations.
 
 ## Assumptions and Limitations
 
-There are some assumptions and limitations in the current version of the application.
+While developing this project, I made some assumptions to keep the scheduling logic manageable. There are also some limitations in the current version that can be improved in the future.
 
 - All employee and brand data used in this project is fictional.
 - Shift timings are assumed to start and end on the same day.
-- Employee weekly-off preferences may be adjusted to improve staffing coverage.
-- The current scheduling algorithm does not guarantee the best possible roster in every situation.
-- Employees with overlapping assignments are excluded from confirmed coverage instead of automatically assigning priority to one brand.
-- Weekly rest validation currently checks complete weeks within the selected month.
-- Manual roster changes may be replaced if the roster is generated again for the same month.
-- Some conflict calculations use the number of employees scheduled to work without adjusting for overlapping assignments.
-- SQLite database changes may be lost when the deployed application restarts or is redeployed.
-- User authentication and permanent change history are not included in the current version.
+- Employee weekly offs may be adjusted to improve staffing coverage.
+- The scheduling algorithm tries to reduce conflicts but does not guarantee the best possible roster.
+- Employees with overlapping assignments are excluded from confirmed coverage for the affected processes.
+- Weekly rest validation checks complete weeks within the selected month.
+- Regenerating a roster for the same month may replace previous manual changes.
+- Some conflict calculations use scheduled employee counts without considering overlapping assignments.
+- SQLite database changes may be lost after the deployed application restarts or is redeployed.
+- User authentication and permanent roster change history are not included in the current version.
 
 ## Development Approach
 
-I developed this project step by step by dividing it into smaller phases.
+Instead of developing the entire application at once, I divided the project into smaller phases.
 
-I started with the database and sample data, then worked on employee management, brand management, roster generation, conflict detection and manual roster editing.
+I first worked on the database structure and sample data because they are the foundation of the application. After that, I developed the employee management, brand management and roster generation features.
 
-After developing the main functionality, I worked on the user interface, testing, GitHub integration and deployment.
+Once the roster generation was working, I focused on conflict detection, manual roster editing and impact analysis. In the final phases, I worked on the user interface, testing, GitHub and Streamlit deployment.
 
-My main goal was to build an application that not only generates employee schedules but also helps managers understand the problems within those schedules.
+My main goal was not just to generate a roster but also to identify the problems within it and help managers make better scheduling decisions.
 
-I used AI assistance for development guidance, code generation and debugging during the project.
+During the development process, I used AI assistance for guidance, code generation, understanding concepts and debugging errors.
 
 ## Author
 
